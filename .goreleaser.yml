@@ -1,0 +1,14 @@
+builds:
+    -   id: mnf-extracter
+        main: ./cmd/mnf-extracter/main.go
+        binary: mnf-extracter
+        flags:
+            - -trimpath
+        ldflags:
+            - -s -w -X main.build={{.Version}}
+        targets:
+            - windows_amd64
+
+archives:
+    -   format: zip
+        name_template: "{{ .ProjectName  }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
