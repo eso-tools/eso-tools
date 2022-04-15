@@ -78,7 +78,7 @@ func Command(ctx context.Context, args []string) error {
 		"",
 
 		"Id",
-		"Field2",
+		"ItemId",
 		"Flags",
 
 		"",
