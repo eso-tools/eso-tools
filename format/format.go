@@ -12,6 +12,9 @@ func BytesFormat(data []byte) string {
 	dataLen := len(data)
 	parts := []string{}
 	for i := 0; i < dataLen; i++ {
+		if i != 0 && i%4 == 0 {
+			parts = append(parts, "")
+		}
 		parts = append(parts, "%02x")
 	}
 
