@@ -15,7 +15,7 @@ type Database struct {
 	Signature []byte
 	Field2    uint32
 	Count     uint32
-	Field4    uint32
+	Version   uint32
 	Records   []*Record
 }
 
@@ -53,17 +53,17 @@ func ParseDatabase(r io.Reader) (*Database, error) {
 	}
 	db.Field2 = field2
 
-	count, err := reader.ReadUint32(r, binary.BigEndian)
+	field3, err := reader.ReadUint32(r, binary.BigEndian)
 	if err != nil {
 		return nil, err
 	}
-	db.Count = count
+	db.Count = field3
 
 	field4, err := reader.ReadUint32(r, binary.BigEndian)
 	if err != nil {
 		return nil, err
 	}
-	db.Field4 = field4
+	db.Version = field4
 
 	for i := 0; i < int(db.Count); i++ {
 		record := &Record{}
