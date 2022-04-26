@@ -13,18 +13,36 @@ Download the compiled binaries in [Releases](https://github.com/eso-tools/eso-to
 Extract all files from a .mnf file:
 
 ```powershell
-.\mnf-extracter.exe `
+mnf-extracter `
     extractAll `
     --input "C:\Program Files (x86)\Zenimax Online\The Elder Scrolls Online\game\client\game.mnf" `
-    --output "./game-data" `
+    --output ".\game-data" `
     --threads 3
 ```
 
 Dump a .mnf file to .csv:
 
 ```powershell
-.\mnf-extracter.exe `
+mnf-extracter `
     dumpMnf `
     --input "C:\Program Files (x86)\Zenimax Online\The Elder Scrolls Online\game\client\game.mnf" `
-    --output "./game.csv"
+    --output ".\game.csv"
+```
+
+Parse a .lang file to .csv:
+
+```powershell
+mnf-extracter `
+    parseLng `
+    --input ".\en.lang" `
+    --output ".\en-lang-data"
+```
+
+Write a .lang file from .csv:
+
+```powershell
+mnf-extracter `
+    writeLng `
+    --input ".\en-lang-data" `
+    --output ".\en.lang"
 ```
