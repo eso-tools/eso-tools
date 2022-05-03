@@ -4,6 +4,7 @@ import (
 	"github.com/eso-tools/eso-tools/cmd/mnf-extracter/debugMnf"
 	"github.com/eso-tools/eso-tools/cmd/mnf-extracter/dumpMnf"
 	"github.com/eso-tools/eso-tools/cmd/mnf-extracter/extractAll"
+	"github.com/eso-tools/eso-tools/cmd/mnf-extracter/extractFile"
 	"github.com/eso-tools/eso-tools/cmd/mnf-extracter/parseLng"
 	"github.com/eso-tools/eso-tools/cmd/mnf-extracter/testZosft"
 	"github.com/eso-tools/eso-tools/cmd/mnf-extracter/writeLng"
@@ -26,6 +27,7 @@ func main() {
 	app.AddHandler(go_app.CommandChecker("dumpMnf"), dumpMnf.Command)
 	app.AddHandler(go_app.CommandChecker("debugMnf"), debugMnf.Command)
 	app.AddHandler(go_app.CommandChecker("extractAll"), extractAll.Command)
+	app.AddHandler(go_app.CommandChecker("extractFile"), extractFile.Command)
 	app.AddHandler(go_app.CommandChecker("parseLng"), parseLng.Command)
 	app.AddHandler(go_app.CommandChecker("writeLng"), writeLng.Command)
 

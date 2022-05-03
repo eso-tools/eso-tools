@@ -20,6 +20,16 @@ mnf-extracter `
     --threads 3
 ```
 
+Extract specific file from a .mnf file:
+
+```powershell
+mnf-extracter `
+    extractFile `
+    --input "C:\Program Files (x86)\Zenimax Online\The Elder Scrolls Online\depot\eso.mnf" `
+    --output ".\eso-data" `
+    -- id "0x01000012-00000000"
+```
+
 Dump a .mnf file to .csv:
 
 ```powershell
