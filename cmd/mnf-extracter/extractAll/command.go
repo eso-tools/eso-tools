@@ -88,7 +88,7 @@ func Command(ctx context.Context, args []string) error {
 		return fmt.Errorf("mnf.Parse: %s", err)
 	}
 
-	pool = workerpool.NewPool(int64(config.Threads), 1000)
+	pool = workerpool.NewPool(int64(threads), 1000)
 
 	go func() {
 		errorChan := pool.Errors()
