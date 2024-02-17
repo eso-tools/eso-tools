@@ -1,9 +1,7 @@
-github.com/itchio/lzma v0.0.0-20190703113020-d3e24e3e3d49 h1:+YrBMf3rkLjkT10zIHyVE4S7ma4hqvfjl6XgnzZwS6o=
-github.com/itchio/lzma v0.0.0-20190703113020-d3e24e3e3d49/go.mod h1:avNrevQMli1pYPsz1+HIHMvx95pk6O+6otbWqCZPeZI=
 github.com/jessevdk/go-flags v1.4.0 h1:4IU2WS7AumrZ/40jfhf4QVDMsQwqA7VEHozFRrGARJA=
 github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
-github.com/new-world-tools/go-oodle v0.1.2 h1:KDZNiiN0TnkOcuncXQtlnteZQYD2samuv6H3phq2DCA=
-github.com/new-world-tools/go-oodle v0.1.2/go.mod h1:G8hCx5mlsQBT8xCYARaiIIyHgt0FI32LLpSN5/DryQM=
+github.com/new-world-tools/go-oodle v0.2.2 h1:nSF9EJTKbGQaGmaQ1nBR2BYgLZN/QGVEUPXCStQYRf4=
+github.com/new-world-tools/go-oodle v0.2.2/go.mod h1:x4Xd9vmmgHj9zlL3DPFggOhvGPow+8GvMcPhEWlEjGA=
 github.com/new-world-tools/new-world-tools v0.3.0 h1:uoFaMMCPdKHuvkJmvmw30DnSoGEUx8eeBVWUEV3WhlY=
 github.com/new-world-tools/new-world-tools v0.3.0/go.mod h1:M5grJAuJSXgQh3HNXQFDvKhcgxeABQxD05U7QNYY97E=
 github.com/zelenin/go-app v0.0.0-20220319181535-7120aa0d458d h1:nqtafAiogL4ywFKEhEChG8C9IltMVhLYzqkPldLi/VE=
