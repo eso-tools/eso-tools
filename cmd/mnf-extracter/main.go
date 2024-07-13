@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	if !oodle.IsLibExists() {
+	if !oodle.IsDllExist() {
 		err := oodle.Download()
 		if err != nil {
 			log.Fatalf("no oo2core library")

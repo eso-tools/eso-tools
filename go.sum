@@ -1,14 +1,10 @@
-github.com/ebitengine/purego v0.8.0-alpha.2.0.20240522163517-88cc57927e42 h1:OxrQX9oGwNmUG0g7pqOafofroSrP7nvqmFB6iCOj/Wc=
-github.com/ebitengine/purego v0.8.0-alpha.2.0.20240522163517-88cc57927e42/go.mod h1:cJsFmQCiLTx+cpFhVN3pj+pQfpYnn2OLeJtaKsRmVoA=
 github.com/jessevdk/go-flags v1.4.0 h1:4IU2WS7AumrZ/40jfhf4QVDMsQwqA7VEHozFRrGARJA=
 github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
-github.com/new-world-tools/go-oodle v0.3.0 h1:iCusCP33vqgTrQJR7ZSElT702XusrPKuKXv2a1AfS6g=
-github.com/new-world-tools/go-oodle v0.3.0/go.mod h1:sBK+HBXuziG/tU81HdghIjX0svlTEw9RAwjVvxyICu4=
+github.com/new-world-tools/go-oodle v0.2.2 h1:nSF9EJTKbGQaGmaQ1nBR2BYgLZN/QGVEUPXCStQYRf4=
+github.com/new-world-tools/go-oodle v0.2.2/go.mod h1:x4Xd9vmmgHj9zlL3DPFggOhvGPow+8GvMcPhEWlEjGA=
 github.com/new-world-tools/new-world-tools v0.3.0 h1:uoFaMMCPdKHuvkJmvmw30DnSoGEUx8eeBVWUEV3WhlY=
 github.com/new-world-tools/new-world-tools v0.3.0/go.mod h1:M5grJAuJSXgQh3HNXQFDvKhcgxeABQxD05U7QNYY97E=
 github.com/zelenin/go-app v0.0.0-20220319181535-7120aa0d458d h1:nqtafAiogL4ywFKEhEChG8C9IltMVhLYzqkPldLi/VE=
 github.com/zelenin/go-app v0.0.0-20220319181535-7120aa0d458d/go.mod h1:ETpA/uW8Uz1Je7U3hLmZ5I/b883TzCGX57YdnSFTCAM=
 github.com/zelenin/go-worker-pool v0.0.2 h1:7XBlbmO+EW3nXFZSBRRiFsKBB+LUjYcag3TPBRf3RpU=
 github.com/zelenin/go-worker-pool v0.0.2/go.mod h1:3ULMxCS2Kw35nbI6OuYzKPb5JaYvVuIukup6VnHIfPo=
-golang.org/x/sys v0.20.0 h1:Od9JTbYCk261bKm4M/mw7AklTlFYIa0bIp9BgSm1S8Y=
-golang.org/x/sys v0.20.0/go.mod h1:/VUhepiaJMQUp4+oa/7Zr1D23ma6VTLIYjOOTFZPUcA=
