@@ -75,6 +75,7 @@ func Command(ctx context.Context, args []string) error {
 		"Offset",
 		"ArchiveIndex",
 		"CompressionType",
+		"FileName",
 	})
 
 	for i, _ := range mnfData.Index3.Block2Records {
@@ -98,6 +99,7 @@ func Command(ctx context.Context, args []string) error {
 			fmt.Sprintf("%d", block3Record.Offset),
 			fmt.Sprintf("%d", block3Record.ArchiveIndex),
 			fmt.Sprintf("%d", block3Record.CompressionType),
+			fmt.Sprintf("%s", fmt.Sprintf("0x%08x-%08x.%s", block2Record.Id, append(block2Record.Field2, block2Record.Flags...), "dat")),
 		})
 	}
 

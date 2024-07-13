@@ -115,7 +115,8 @@ func Command(ctx context.Context, args []string) error {
 
 			data, err := mnfData.Read(file.Record3)
 			if err != nil {
-				log.Fatalf("mnfData.Read: %s", err)
+				log.Printf("mnfData.Read: %s", err)
+				return err
 			}
 
 			file.Data = data
