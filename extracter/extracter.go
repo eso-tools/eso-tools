@@ -102,7 +102,7 @@ func GetExtension(data []byte) string {
 		return "gr2"
 
 	case bytes.Equal(byte2, []byte{0x1e, 0x0d}):
-		return "hkx"
+		return "hkt"
 	}
 
 	byte3 := getChunkStart(data, 3)
@@ -148,9 +148,15 @@ func GetExtension(data []byte) string {
 	switch true {
 	case bytes.Equal(byte5, []byte("ZOSFT")):
 		return "zosft"
+	}
 
-	case bytes.Equal(byte5, []byte("__ffx")):
-		return "ffx" // ?
+	byte8 := getChunkStart(data, 8)
+	switch true {
+	case bytes.Equal(byte8, []byte{0x5f, 0x5f, 0x66, 0x66, 0x78, 0x00, 0x00, 0x01}):
+		return "ffxactor"
+
+	case bytes.Equal(byte8, []byte{0x5f, 0x5f, 0x66, 0x66, 0x78, 0x00, 0x00, 0x02}):
+		return "ffxbones"
 	}
 
 	return "dat"
