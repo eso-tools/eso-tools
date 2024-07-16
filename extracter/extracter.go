@@ -5,8 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/eso-tools/eso-tools/mnf"
-	"path/filepath"
-	"strings"
 )
 
 type Record struct {
@@ -17,9 +15,6 @@ type Record struct {
 }
 
 func (record *Record) GetExtension() string {
-	if record.FileName != "" && filepath.Base(record.FileName) != "filetable.dat" {
-		return strings.TrimPrefix(filepath.Ext(record.FileName), ".")
-	}
 	return GetExtension(record.Data)
 }
 
@@ -62,14 +57,6 @@ func CombineRecords(mnfData *mnf.Mnf, recordChan chan *Record, errorChan chan er
 			Record3: mnfData.Index3.Block3Records[i],
 		}
 
-		_, ok := fileNames[record.Record2.Id]
-		if ok {
-			if bytes.Equal(twoZeroBytes, record.Record2.Field2) {
-				record.FileName = fileNames[record.Record2.Id]
-				delete(fileNames, record.Record2.Id)
-			}
-		}
-
 		if isDepot && skip && record.Record3.ArchiveIndex != 0 {
 			skip = false
 		}
@@ -86,6 +73,14 @@ func CombineRecords(mnfData *mnf.Mnf, recordChan chan *Record, errorChan chan er
 
 		if !archive.IsValid(record.Record3) {
 			continue
+		}
+
+		_, ok = fileNames[record.Record2.Id]
+		if ok {
+			if bytes.Equal(twoZeroBytes, record.Record2.Field2) {
+				record.FileName = fileNames[record.Record2.Id]
+				delete(fileNames, record.Record2.Id)
+			}
 		}
 
 		recordChan <- record
