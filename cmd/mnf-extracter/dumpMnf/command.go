@@ -47,6 +47,11 @@ func Command(ctx context.Context, args []string) error {
 		return fmt.Errorf("len(mnfData.Index3.Block2Records) != len(mnfData.Index3.Block3Records)")
 	}
 
+	err = os.MkdirAll(filepath.Dir(config.Output), 0777)
+	if err != nil {
+		return fmt.Errorf("os.MkdirAll: %s", err)
+	}
+
 	f, err := os.Create(config.Output)
 	if err != nil {
 		return fmt.Errorf("os.Create: %s", err)
