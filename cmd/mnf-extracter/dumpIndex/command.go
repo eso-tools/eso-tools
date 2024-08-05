@@ -1,9 +1,9 @@
 package dumpIndex
 
 import (
-	"bufio"
 	"bytes"
 	"context"
+	"encoding/csv"
 	"fmt"
 	"github.com/eso-tools/eso-tools/extracter"
 	"github.com/eso-tools/eso-tools/mnf"
@@ -73,9 +73,17 @@ func Command(ctx context.Context, args []string) error {
 
 	log.Printf("Writing \"%s\"...", config.Output)
 
-	buf := bufio.NewWriter(f)
+	csvWriter := csv.NewWriter(f)
 
-	buf.WriteString("rawName,archive,offset,compType,compSize,uncompSize,fileName\n")
+	csvWriter.Write([]string{
+		"rawName",
+		"archive",
+		"offset",
+		"compType",
+		"compSize",
+		"uncompSize",
+		"fileName",
+	})
 
 	isDepot := mnfData.IsDepot()
 	skip := isDepot
@@ -115,10 +123,18 @@ func Command(ctx context.Context, args []string) error {
 		//	continue
 		//}
 
-		buf.WriteString(fmt.Sprintf("%s,%d,%d,%d,%d,%d,%s\n", record.GetRawFilename(), record.Record3.ArchiveIndex, record.Record3.Offset, record.Record3.CompressionType, record.Record3.CompressedSize, record.Record3.UncompressedSize, record.FileName))
+		csvWriter.Write([]string{
+			fmt.Sprintf("%s", record.GetRawFilename()),
+			fmt.Sprintf("%d", record.Record3.ArchiveIndex),
+			fmt.Sprintf("%d", record.Record3.Offset),
+			fmt.Sprintf("%d", record.Record3.CompressionType),
+			fmt.Sprintf("%d", record.Record3.CompressedSize),
+			fmt.Sprintf("%d", record.Record3.UncompressedSize),
+			fmt.Sprintf("%s", record.FileName),
+		})
 	}
 
-	buf.Flush()
+	csvWriter.Flush()
 
 	return nil
 }
