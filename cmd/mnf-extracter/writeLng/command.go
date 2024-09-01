@@ -77,8 +77,8 @@ func Command(ctx context.Context, args []string) error {
 
 	log.Printf("Found %d .csv", len(csvFiles))
 
-	langData := &language.Language{
-		Records: []*language.Record{},
+	langStore := &language.WriteStore{
+		Records: []*language.WriteRecord{},
 	}
 
 	log.Printf("Parsing .csv")
@@ -119,11 +119,11 @@ func Command(ctx context.Context, args []string) error {
 			}
 			id := uint32(u64)
 
-			langData.Records = append(langData.Records, &language.Record{
+			langStore.Records = append(langStore.Records, &language.WriteRecord{
 				DomainId: domainId,
 				GroupId:  groupId,
 				Id:       id,
-				Text:     fields[2],
+				Value:    fields[2],
 			})
 		}
 
@@ -138,7 +138,7 @@ func Command(ctx context.Context, args []string) error {
 	}
 	defer langFile.Close()
 
-	err = language.Write(langFile, langData)
+	err = language.WriteWriteStore(langFile, langStore)
 	if err != nil {
 		return fmt.Errorf("language.Write: %s", err)
 	}

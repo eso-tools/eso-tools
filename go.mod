@@ -1,6 +1,6 @@
 module github.com/eso-tools/eso-tools
 
-go 1.22.2
+go 1.23.0
 
 require (
 	github.com/jessevdk/go-flags v1.4.0

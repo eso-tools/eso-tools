@@ -1,122 +1,163 @@
 package language
 
 import (
-	"bytes"
+	"bufio"
 	"encoding/binary"
-	"errors"
+	"fmt"
 	"github.com/eso-tools/eso-tools/reader"
 	"io"
+	"maps"
+	"slices"
 )
 
-var signature = []byte{0x00, 0x00, 0x00, 0x02}
+const (
+	signature = 0x00000002
+)
 
-type Language struct {
-	Signature []byte
-	Count     uint32
-	Records   []*Record
+type ReadStore struct {
+	Signature      uint32
+	Count          uint32
+	Records        []*ReadRecord
+	valuesByOffset map[uint32]string
+	recordMap      map[uint32]map[uint32]map[uint32]*ReadRecord
 }
 
-type Record struct {
+func (store *ReadStore) GetValueByRecord(record *ReadRecord) string {
+	return store.valuesByOffset[record.Offset]
+}
+
+func (store *ReadStore) GetValue(domainId uint32, groupId uint32, id uint32) string {
+	var ok bool
+
+	_, ok = store.recordMap[domainId]
+	if !ok {
+		return ""
+	}
+
+	_, ok = store.recordMap[domainId][groupId]
+	if !ok {
+		return ""
+	}
+
+	_, ok = store.recordMap[domainId][groupId][id]
+	if !ok {
+		return ""
+	}
+
+	return store.GetValueByRecord(store.recordMap[domainId][groupId][id])
+}
+
+func (store *ReadStore) GetDomainIds() []uint32 {
+	return slices.Sorted(maps.Keys(store.recordMap))
+}
+
+func (store *ReadStore) GetGroupIds(domainId uint32) []uint32 {
+	return slices.Sorted(maps.Keys(store.recordMap[domainId]))
+}
+
+func (store *ReadStore) GetRecords(domainId uint32, groupId uint32) []*ReadRecord {
+	return slices.SortedFunc(maps.Values(store.recordMap[domainId][groupId]), func(a *ReadRecord, b *ReadRecord) int {
+		return int(a.Id) - int(b.Id)
+	})
+}
+
+type ReadRecord struct {
 	DomainId uint32
 	GroupId  uint32
 	Id       uint32
 	Offset   uint32
-	Text     string
 }
 
-func Parse(r io.Reader) (*Language, error) {
-	var data []byte
-	var err error
+func ParseReadStore(r io.Reader) (*ReadStore, error) {
+	var (
+		u32   uint32
+		value string
+		err   error
+		ok    bool
+	)
 
-	lang := &Language{}
+	store := &ReadStore{
+		valuesByOffset: map[uint32]string{},
+		recordMap:      map[uint32]map[uint32]map[uint32]*ReadRecord{},
+	}
 
-	data, err = reader.ReadBytes(r, 4)
+	buf := bufio.NewReaderSize(r, 1024*1024)
+
+	u32, err = reader.ReadUint32(buf, binary.BigEndian)
 	if err != nil {
 		return nil, err
 	}
 
-	if !bytes.Equal(data, signature) {
-		return nil, errors.New("wrong signature")
+	if u32 != signature {
+		return nil, fmt.Errorf("wrong signature: %d", u32)
 	}
-	lang.Signature = data
+	store.Signature = u32
 
-	count, err := reader.ReadUint32(r, binary.BigEndian)
+	u32, err = reader.ReadUint32(buf, binary.BigEndian)
 	if err != nil {
 		return nil, err
 	}
-	lang.Count = count
+	store.Count = u32
 
-	recordsByOffset := map[uint32][]*Record{}
+	store.Records = make([]*ReadRecord, 0, store.Count)
 
-	for i := 0; i < int(lang.Count); i++ {
-		record := &Record{}
+	for i := 0; i < int(store.Count); i++ {
+		record := &ReadRecord{}
 
-		domainId, err := reader.ReadUint32(r, binary.BigEndian)
+		u32, err = reader.ReadUint32(buf, binary.BigEndian)
 		if err != nil {
 			return nil, err
 		}
-		record.DomainId = domainId
+		record.DomainId = u32
 
-		groupId, err := reader.ReadUint32(r, binary.BigEndian)
+		u32, err = reader.ReadUint32(buf, binary.BigEndian)
 		if err != nil {
 			return nil, err
 		}
-		record.GroupId = groupId
+		record.GroupId = u32
 
-		id, err := reader.ReadUint32(r, binary.BigEndian)
+		u32, err = reader.ReadUint32(buf, binary.BigEndian)
 		if err != nil {
 			return nil, err
 		}
-		record.Id = id
+		record.Id = u32
 
-		offset, err := reader.ReadUint32(r, binary.BigEndian)
+		u32, err = reader.ReadUint32(buf, binary.BigEndian)
 		if err != nil {
 			return nil, err
 		}
-		record.Offset = offset
+		record.Offset = u32
 
-		lang.Records = append(lang.Records, record)
+		store.Records = append(store.Records, record)
 
-		_, ok := recordsByOffset[record.Offset]
+		_, ok = store.recordMap[record.DomainId]
 		if !ok {
-			recordsByOffset[record.Offset] = []*Record{}
+			store.recordMap[record.DomainId] = make(map[uint32]map[uint32]*ReadRecord)
 		}
-		recordsByOffset[record.Offset] = append(recordsByOffset[record.Offset], record)
+
+		_, ok = store.recordMap[record.DomainId][record.GroupId]
+		if !ok {
+			store.recordMap[record.DomainId][record.GroupId] = make(map[uint32]*ReadRecord)
+		}
+
+		store.recordMap[record.DomainId][record.GroupId][record.Id] = record
 	}
 
 	var currentOffset uint32
-	var i uint32
-Loop:
+
 	for {
-		buf := bytes.NewBuffer(nil)
-		for {
-			i++
-			data, err := reader.ReadBytes(r, 1)
-			if err != nil {
-				if err == io.EOF {
-					break Loop
-				}
-				return nil, err
-			}
-			if data[0] == 0x00 {
-				text := buf.String()
-				buf.Reset()
-
-				for _, record := range recordsByOffset[currentOffset] {
-					record.Text = text
-				}
-
-				currentOffset = i
-
+		value, err = reader.ReadNullTerminatedString(buf)
+		if err != nil {
+			if err == io.EOF {
 				break
-			} else {
-				err = buf.WriteByte(data[0])
-				if err != nil {
-					return nil, err
-				}
 			}
+			return nil, err
 		}
+
+		store.valuesByOffset[currentOffset] = value
+
+		currentOffset += uint32(len(value) + 1)
 	}
 
-	return lang, nil
+	return store, nil
 }

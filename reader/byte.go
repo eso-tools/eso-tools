@@ -1,7 +1,9 @@
 package reader
 
 import (
+	"bytes"
 	"encoding/binary"
+	"errors"
 	"io"
 )
 
@@ -50,4 +52,30 @@ func ReadUint64(r io.Reader, byteOrder binary.ByteOrder) (uint64, error) {
 	}
 
 	return byteOrder.Uint64(b), nil
+}
+
+func ReadNullTerminatedString(r io.Reader) (string, error) {
+	var buf bytes.Buffer
+	b := make([]byte, 1)
+	for {
+		n, err := r.Read(b)
+		if err != nil {
+			if err == io.EOF && buf.Len() > 0 {
+				return "", errors.New("null byte not found before EOF")
+			}
+			return "", err
+		}
+
+		if n == 0 {
+			continue
+		}
+
+		if b[0] == 0x00 {
+			break
+		}
+
+		buf.WriteByte(b[0])
+	}
+
+	return buf.String(), nil
 }
