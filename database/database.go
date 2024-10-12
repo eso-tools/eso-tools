@@ -29,6 +29,15 @@ type Record struct {
 	Data             []byte
 }
 
+type RecordMeta struct {
+	Field1   uint8
+	Field2   uint32
+	Field3   uint32
+	Field4   uint16
+	Field5   uint32
+	DateTime uint32
+}
+
 func ParseDatabase(r io.Reader) (*Database, error) {
 	var data []byte
 	var err error
