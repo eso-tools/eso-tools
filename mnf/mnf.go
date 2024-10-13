@@ -1,6 +1,7 @@
 package mnf
 
 import (
+	"bufio"
 	"bytes"
 	"compress/zlib"
 	"encoding/binary"
@@ -104,13 +105,15 @@ func (mnfData *Mnf) parse() error {
 	var data []byte
 	var err error
 
-	file, err := os.Open(mnfData.Path)
+	f, err := os.Open(mnfData.Path)
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer f.Close()
 
-	data, err = reader.ReadBytes(file, len([]byte(signature)))
+	r := bufio.NewReaderSize(f, 1024*1024)
+
+	data, err = reader.ReadBytes(r, len([]byte(signature)))
 	if err != nil {
 		return err
 	}
@@ -120,7 +123,7 @@ func (mnfData *Mnf) parse() error {
 	}
 	mnfData.Signature = signature
 
-	version, err := reader.ReadUint16(file, binary.LittleEndian)
+	version, err := reader.ReadUint16(r, binary.LittleEndian)
 	if err != nil {
 		return err
 	}
@@ -129,7 +132,7 @@ func (mnfData *Mnf) parse() error {
 	}
 	mnfData.Version = version
 
-	archiveCount, err := reader.ReadUint16(file, binary.LittleEndian)
+	archiveCount, err := reader.ReadUint16(r, binary.LittleEndian)
 	if err != nil {
 		return err
 	}
@@ -137,7 +140,7 @@ func (mnfData *Mnf) parse() error {
 
 	archiveIds := make(map[uint16]uint16, mnfData.ArchiveCount)
 	for i := uint16(0); i < mnfData.ArchiveCount; i++ {
-		value, err := reader.ReadUint16(file, binary.LittleEndian)
+		value, err := reader.ReadUint16(r, binary.LittleEndian)
 		if err != nil {
 			return err
 		}
@@ -156,51 +159,51 @@ func (mnfData *Mnf) parse() error {
 		mnfData.Archives[archiveIndex] = archive
 	}
 
-	field5, err := reader.ReadUint32(file, binary.LittleEndian)
+	field5, err := reader.ReadUint32(r, binary.LittleEndian)
 	if err != nil {
 		return err
 	}
 	mnfData.Field5 = field5
 
-	dataSize, err := reader.ReadUint32(file, binary.LittleEndian)
+	dataSize, err := reader.ReadUint32(r, binary.LittleEndian)
 	if err != nil {
 		return err
 	}
 	mnfData.DataSize = dataSize
 
 	// indexes
-	indexId, err := reader.ReadUint16(file, binary.BigEndian)
+	indexId, err := reader.ReadUint16(r, binary.BigEndian)
 	if err != nil {
 		return err
 	}
 
 	if indexId == 0 {
 		index0Data := &Index0{}
-		field1, err := reader.ReadBytes(file, 2)
+		field1, err := reader.ReadBytes(r, 2)
 		if err != nil {
 			return err
 		}
 		index0Data.Field1 = field1
 
-		block1Size, err := reader.ReadUint32(file, binary.BigEndian)
+		block1Size, err := reader.ReadUint32(r, binary.BigEndian)
 		if err != nil {
 			return err
 		}
 		index0Data.Block1Size = block1Size
 
-		block1Data, err := reader.ReadBytes(file, int(index0Data.Block1Size))
+		block1Data, err := reader.ReadBytes(r, int(index0Data.Block1Size))
 		if err != nil {
 			return err
 		}
 		index0Data.Block1Data = block1Data
 
-		block2Size, err := reader.ReadUint32(file, binary.BigEndian)
+		block2Size, err := reader.ReadUint32(r, binary.BigEndian)
 		if err != nil {
 			return err
 		}
 		index0Data.Block2Size = block2Size
 
-		block2Data, err := reader.ReadBytes(file, int(index0Data.Block2Size))
+		block2Data, err := reader.ReadBytes(r, int(index0Data.Block2Size))
 		if err != nil {
 			return err
 		}
@@ -208,7 +211,7 @@ func (mnfData *Mnf) parse() error {
 
 		mnfData.Index0 = index0Data
 
-		indexId, err = reader.ReadUint16(file, binary.BigEndian)
+		indexId, err = reader.ReadUint16(r, binary.BigEndian)
 		if err != nil {
 			return err
 		}
@@ -220,43 +223,43 @@ func (mnfData *Mnf) parse() error {
 			Block2Records: []*Block2Record{},
 			Block3Records: []*Block3Record{},
 		}
-		field1, err := reader.ReadBytes(file, 4)
+		field1, err := reader.ReadBytes(r, 4)
 		if err != nil {
 			return err
 		}
 		index3Data.Field1 = field1
 
-		count1, err := reader.ReadUint32(file, binary.BigEndian)
+		count1, err := reader.ReadUint32(r, binary.BigEndian)
 		if err != nil {
 			return err
 		}
 		index3Data.Count1 = count1
 
-		count2, err := reader.ReadUint32(file, binary.BigEndian)
+		count2, err := reader.ReadUint32(r, binary.BigEndian)
 		if err != nil {
 			return err
 		}
 		index3Data.Count2 = count2
 
-		count3, err := reader.ReadUint32(file, binary.BigEndian)
+		count3, err := reader.ReadUint32(r, binary.BigEndian)
 		if err != nil {
 			return err
 		}
 		index3Data.Count3 = count3
 
-		uncompressedBlock1Size, err := reader.ReadUint32(file, binary.BigEndian)
+		uncompressedBlock1Size, err := reader.ReadUint32(r, binary.BigEndian)
 		if err != nil {
 			return err
 		}
 		index3Data.UncompressedBlock1Size = uncompressedBlock1Size
 
-		compressedBlock1Size, err := reader.ReadUint32(file, binary.BigEndian)
+		compressedBlock1Size, err := reader.ReadUint32(r, binary.BigEndian)
 		if err != nil {
 			return err
 		}
 		index3Data.CompressedBlock1Size = compressedBlock1Size
 
-		lr := io.LimitReader(file, int64(index3Data.CompressedBlock1Size))
+		lr := io.LimitReader(r, int64(index3Data.CompressedBlock1Size))
 		zr, err := zlib.NewReader(lr)
 		if err != nil {
 			return err
@@ -281,19 +284,19 @@ func (mnfData *Mnf) parse() error {
 		index3Data.Block1Records = block1Records
 		zr.Close()
 
-		uncompressedBlock2Size, err := reader.ReadUint32(file, binary.BigEndian)
+		uncompressedBlock2Size, err := reader.ReadUint32(r, binary.BigEndian)
 		if err != nil {
 			return err
 		}
 		index3Data.UncompressedBlock2Size = uncompressedBlock2Size
 
-		compressedBlock2Size, err := reader.ReadUint32(file, binary.BigEndian)
+		compressedBlock2Size, err := reader.ReadUint32(r, binary.BigEndian)
 		if err != nil {
 			return err
 		}
 		index3Data.CompressedBlock2Size = compressedBlock2Size
 
-		lr = io.LimitReader(file, int64(index3Data.CompressedBlock2Size))
+		lr = io.LimitReader(r, int64(index3Data.CompressedBlock2Size))
 		zr, err = zlib.NewReader(lr)
 		if err != nil {
 			return err
@@ -317,19 +320,19 @@ func (mnfData *Mnf) parse() error {
 		index3Data.Block2Records = block2Records
 		zr.Close()
 
-		uncompressedBlock3Size, err := reader.ReadUint32(file, binary.BigEndian)
+		uncompressedBlock3Size, err := reader.ReadUint32(r, binary.BigEndian)
 		if err != nil {
 			return err
 		}
 		index3Data.UncompressedBlock3Size = uncompressedBlock3Size
 
-		compressedBlock3Size, err := reader.ReadUint32(file, binary.BigEndian)
+		compressedBlock3Size, err := reader.ReadUint32(r, binary.BigEndian)
 		if err != nil {
 			return err
 		}
 		index3Data.CompressedBlock3Size = compressedBlock3Size
 
-		lr = io.LimitReader(file, int64(index3Data.CompressedBlock3Size))
+		lr = io.LimitReader(r, int64(index3Data.CompressedBlock3Size))
 		zr, err = zlib.NewReader(lr)
 		if err != nil {
 			return err
