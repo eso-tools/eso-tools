@@ -111,7 +111,7 @@ func Command(ctx context.Context, args []string) error {
 			if err != nil {
 				return fmt.Errorf("strconv.ParseUint: %s", err)
 			}
-			groupId := uint32(u64)
+			variant := uint32(u64)
 
 			u64, err = strconv.ParseUint(fields[1], 10, 32)
 			if err != nil {
@@ -121,7 +121,7 @@ func Command(ctx context.Context, args []string) error {
 
 			langStore.Records = append(langStore.Records, &language.WriteRecord{
 				DomainId: domainId,
-				GroupId:  groupId,
+				Variant:  variant,
 				Id:       id,
 				Value:    fields[2],
 			})

@@ -26,7 +26,7 @@ func (store *ReadStore) GetValueByRecord(record *ReadRecord) string {
 	return store.valuesByOffset[record.Offset]
 }
 
-func (store *ReadStore) GetValue(domainId uint32, groupId uint32, id uint32) string {
+func (store *ReadStore) GetValue(domainId uint32, id uint32, variant uint32) string {
 	var ok bool
 
 	_, ok = store.recordMap[domainId]
@@ -34,36 +34,39 @@ func (store *ReadStore) GetValue(domainId uint32, groupId uint32, id uint32) str
 		return ""
 	}
 
-	_, ok = store.recordMap[domainId][groupId]
+	_, ok = store.recordMap[domainId][id]
 	if !ok {
 		return ""
 	}
 
-	_, ok = store.recordMap[domainId][groupId][id]
+	_, ok = store.recordMap[domainId][id][variant]
 	if !ok {
 		return ""
 	}
 
-	return store.GetValueByRecord(store.recordMap[domainId][groupId][id])
+	return store.GetValueByRecord(store.recordMap[domainId][id][variant])
 }
 
 func (store *ReadStore) GetDomainIds() []uint32 {
 	return slices.Sorted(maps.Keys(store.recordMap))
 }
 
-func (store *ReadStore) GetGroupIds(domainId uint32) []uint32 {
+func (store *ReadStore) GetIds(domainId uint32) []uint32 {
 	return slices.Sorted(maps.Keys(store.recordMap[domainId]))
 }
 
-func (store *ReadStore) GetRecords(domainId uint32, groupId uint32) []*ReadRecord {
-	return slices.SortedFunc(maps.Values(store.recordMap[domainId][groupId]), func(a *ReadRecord, b *ReadRecord) int {
+func (store *ReadStore) GetRecords(domainId uint32, id uint32) []*ReadRecord {
+	return slices.SortedFunc(maps.Values(store.recordMap[domainId][id]), func(a *ReadRecord, b *ReadRecord) int {
+		if a.Id == b.Id {
+			return int(a.Variant) - int(b.Variant)
+		}
 		return int(a.Id) - int(b.Id)
 	})
 }
 
 type ReadRecord struct {
 	DomainId uint32
-	GroupId  uint32
+	Variant  uint32
 	Id       uint32
 	Offset   uint32
 }
@@ -114,7 +117,7 @@ func ParseReadStore(r io.Reader) (*ReadStore, error) {
 		if err != nil {
 			return nil, err
 		}
-		record.GroupId = u32
+		record.Variant = u32
 
 		u32, err = reader.ReadUint32(buf, binary.BigEndian)
 		if err != nil {
@@ -135,12 +138,12 @@ func ParseReadStore(r io.Reader) (*ReadStore, error) {
 			store.recordMap[record.DomainId] = make(map[uint32]map[uint32]*ReadRecord)
 		}
 
-		_, ok = store.recordMap[record.DomainId][record.GroupId]
+		_, ok = store.recordMap[record.DomainId][record.Id]
 		if !ok {
-			store.recordMap[record.DomainId][record.GroupId] = make(map[uint32]*ReadRecord)
+			store.recordMap[record.DomainId][record.Id] = make(map[uint32]*ReadRecord)
 		}
 
-		store.recordMap[record.DomainId][record.GroupId][record.Id] = record
+		store.recordMap[record.DomainId][record.Id][record.Variant] = record
 	}
 
 	var currentOffset uint32

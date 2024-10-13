@@ -17,7 +17,7 @@ type WriteStore struct {
 	recordMap map[uint32]map[uint32]map[uint32]*WriteRecord
 }
 
-func (store *WriteStore) GetValue(domainId uint32, groupId uint32, id uint32) string {
+func (store *WriteStore) GetValue(domainId uint32, id uint32, variant uint32) string {
 	var ok bool
 
 	_, ok = store.recordMap[domainId]
@@ -25,36 +25,39 @@ func (store *WriteStore) GetValue(domainId uint32, groupId uint32, id uint32) st
 		return ""
 	}
 
-	_, ok = store.recordMap[domainId][groupId]
+	_, ok = store.recordMap[domainId][id]
 	if !ok {
 		return ""
 	}
 
-	_, ok = store.recordMap[domainId][groupId][id]
+	_, ok = store.recordMap[domainId][id][variant]
 	if !ok {
 		return ""
 	}
 
-	return store.recordMap[domainId][groupId][id].Value
+	return store.recordMap[domainId][id][variant].Value
 }
 
 func (store *WriteStore) GetDomainIds() []uint32 {
 	return slices.Sorted(maps.Keys(store.recordMap))
 }
 
-func (store *WriteStore) GetGroupIds(domainId uint32) []uint32 {
+func (store *WriteStore) GetIds(domainId uint32) []uint32 {
 	return slices.Sorted(maps.Keys(store.recordMap[domainId]))
 }
 
-func (store *WriteStore) GetRecords(domainId uint32, groupId uint32) []*WriteRecord {
-	return slices.SortedFunc(maps.Values(store.recordMap[domainId][groupId]), func(a *WriteRecord, b *WriteRecord) int {
+func (store *WriteStore) GetRecords(domainId uint32, id uint32) []*WriteRecord {
+	return slices.SortedFunc(maps.Values(store.recordMap[domainId][id]), func(a *WriteRecord, b *WriteRecord) int {
+		if a.Id == b.Id {
+			return int(a.Variant) - int(b.Variant)
+		}
 		return int(a.Id) - int(b.Id)
 	})
 }
 
 type WriteRecord struct {
 	DomainId uint32
-	GroupId  uint32
+	Variant  uint32
 	Id       uint32
 	Offset   uint32
 	Value    string
@@ -106,7 +109,7 @@ func ParseWriteStore(r io.Reader) (*WriteStore, error) {
 		if err != nil {
 			return nil, err
 		}
-		record.GroupId = u32
+		record.Variant = u32
 
 		u32, err = reader.ReadUint32(buf, binary.BigEndian)
 		if err != nil {
@@ -127,12 +130,12 @@ func ParseWriteStore(r io.Reader) (*WriteStore, error) {
 			store.recordMap[record.DomainId] = make(map[uint32]map[uint32]*WriteRecord)
 		}
 
-		_, ok = store.recordMap[record.DomainId][record.GroupId]
+		_, ok = store.recordMap[record.DomainId][record.Id]
 		if !ok {
-			store.recordMap[record.DomainId][record.GroupId] = make(map[uint32]*WriteRecord)
+			store.recordMap[record.DomainId][record.Id] = make(map[uint32]*WriteRecord)
 		}
 
-		store.recordMap[record.DomainId][record.GroupId][record.Id] = record
+		store.recordMap[record.DomainId][record.Id][record.Variant] = record
 
 		_, ok = recordsByOffset[record.Offset]
 		if !ok {
@@ -201,7 +204,7 @@ func WriteWriteStore(w io.Writer, store *WriteStore) error {
 			return err
 		}
 
-		err = binary.Write(w, binary.BigEndian, record.GroupId)
+		err = binary.Write(w, binary.BigEndian, record.Variant)
 		if err != nil {
 			return err
 		}

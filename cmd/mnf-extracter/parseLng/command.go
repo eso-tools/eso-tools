@@ -72,11 +72,11 @@ func Command(ctx context.Context, args []string) error {
 
 		csvWriter := csv.NewWriter(file)
 
-		for _, groupId := range langStore.GetGroupIds(domainId) {
-			for _, record := range langStore.GetRecords(domainId, groupId) {
+		for _, id := range langStore.GetIds(domainId) {
+			for _, record := range langStore.GetRecords(domainId, id) {
 				csvWriter.Write([]string{
-					fmt.Sprintf("%d", groupId),
 					fmt.Sprintf("%d", record.Id),
+					fmt.Sprintf("%d", record.Variant),
 					langStore.GetValueByRecord(record),
 				})
 			}
