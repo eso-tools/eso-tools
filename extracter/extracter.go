@@ -90,9 +90,6 @@ func CombineRecords(mnfData *mnf.Mnf, recordChan chan *Record, errorChan chan er
 func GetExtension(data []byte) string {
 	byte2 := getChunkStart(data, 2)
 	switch true {
-	case bytes.Equal(byte2, []byte{0xe2, 0x00}):
-		return "xmlc"
-
 	case bytes.Equal(byte2, []byte{0xe5, 0x9b}):
 		return "gr2"
 
@@ -106,22 +103,22 @@ func GetExtension(data []byte) string {
 		return "dds"
 
 	case bytes.Equal(byte3, []byte("XRF")):
-		return "xrf" // ?
-
-	case bytes.Equal(byte3, []byte("xV4")):
-		return "xv4" // ?
+		return "xref"
 	}
 
 	byte4 := getChunkStart(data, 4)
 	switch true {
-	case bytes.Equal(byte4, []byte("RIFF")):
-		return "wem"
+	case bytes.Equal(byte4, []byte("ANFT")):
+		return "anft"
 
 	case bytes.Equal(byte4, []byte("BKHD")):
 		return "bnk"
 
-	case bytes.Equal(byte4, []byte("ANFT")):
-		return "anft"
+	case bytes.Equal(byte4, []byte{0xfa, 0xfa, 0xeb, 0xeb}):
+		return "db"
+
+	case bytes.Equal(byte4, []byte{0xfb, 0xfb, 0xec, 0xec}):
+		return "index"
 
 	case bytes.Equal(byte4, []byte{0x1b, 0x4c, 0x75, 0x61}):
 		return "luac"
@@ -130,13 +127,10 @@ func GetExtension(data []byte) string {
 		return "png"
 
 	case bytes.Equal(byte4, []byte("PSB2")):
-		return "psb2" // ?
+		return "psb"
 
-	case bytes.Equal(byte4, []byte{0xfa, 0xfa, 0xeb, 0xeb}):
-		return "db"
-
-	case bytes.Equal(byte4, []byte{0xfb, 0xfb, 0xec, 0xec}):
-		return "index"
+	case bytes.Equal(byte4, []byte("RIFF")):
+		return "wem"
 	}
 
 	byte5 := getChunkStart(data, 5)
@@ -152,6 +146,9 @@ func GetExtension(data []byte) string {
 
 	case bytes.Equal(byte8, []byte{0x5f, 0x5f, 0x66, 0x66, 0x78, 0x00, 0x00, 0x02}):
 		return "ffxbones"
+
+		//case bytes.Equal(byte8, []byte{0x5f, 0x5f, 0x66, 0x66, 0x78, 0x00, 0x00, 0x03}):
+		//	return ""
 	}
 
 	return "dat"
