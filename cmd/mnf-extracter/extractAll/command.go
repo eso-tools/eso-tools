@@ -4,19 +4,22 @@ import (
 	"bytes"
 	"context"
 	"crypto/sha1"
-	"errors"
 	"fmt"
+	"io"
+	"log"
+	"os"
+	"path/filepath"
+	"runtime"
+	"sort"
+	"strings"
+
 	"github.com/eso-tools/eso-tools/extracter"
 	"github.com/eso-tools/eso-tools/mnf"
 	"github.com/jessevdk/go-flags"
 	"github.com/new-world-tools/new-world-tools/hash"
 	"github.com/new-world-tools/new-world-tools/profiler"
+	"github.com/zelenin/go-texconv"
 	workerpool "github.com/zelenin/go-worker-pool"
-	"io"
-	"log"
-	"os"
-	"path/filepath"
-	"sort"
 )
 
 const (
@@ -24,11 +27,18 @@ const (
 	maxThreads     uint8 = 5
 )
 
+var supportedFormatsForDdsConverting = map[string]bool{
+	"jpg": true,
+	"png": true,
+	//"webp": true,
+}
+
 type Config struct {
-	Input       string `long:"input" short:"i" required:"true"`
-	Output      string `long:"output" short:"o" required:"true"`
-	Threads     uint8  `long:"threads" short:"t"`
-	HashSumFile string `long:"hashSumFile" short:"h"`
+	Input        string `long:"input" short:"i" required:"true"`
+	Output       string `long:"output" short:"o" required:"true"`
+	Threads      uint8  `long:"threads" short:"t"`
+	HashSumFile  string `long:"hashSumFile" short:"h"`
+	ConvertDdsTo string `long:"convert-dds-to"`
 }
 
 func Command(ctx context.Context, args []string) error {
@@ -77,6 +87,10 @@ func Command(ctx context.Context, args []string) error {
 		hashRegistry = hash.NewRegistry()
 	}
 
+	if config.ConvertDdsTo != "" && !supportedFormatsForDdsConverting[config.ConvertDdsTo] {
+		log.Fatalf("Unsupported format for converting: %s", config.ConvertDdsTo)
+	}
+
 	err = os.MkdirAll(outputDirPath, 0755)
 	if err != nil {
 		return fmt.Errorf("MkdirAll: %s", err)
@@ -99,16 +113,14 @@ func Command(ctx context.Context, args []string) error {
 				break
 			}
 
-			taskId := err.(workerpool.TaskError).Id
-			err = errors.Unwrap(err)
-			log.Printf("task #%d err: %s", taskId, err)
+			log.Printf("%s", err)
 		}
 	}()
 
 	log.Printf("Prepare records...")
 
 	addTask := func(id int64, total int, file *extracter.Record, mnfData *mnf.Mnf) {
-		pool.AddTask(workerpool.NewTask(id, func(id int64) error {
+		pool.AddTask(func(ctx context.Context) error {
 			if id%10000 == 0 {
 				log.Printf("Task %d/%d", id, total)
 			}
@@ -154,10 +166,60 @@ func Command(ctx context.Context, args []string) error {
 
 				hashSum = hasher.Sum(nil)
 
-				hashRegistry.Add(filepath.Join(fmt.Sprintf("%03d", file.Record3.ArchiveIndex), file.GetRawFilename()), hashSum)
+				hashRegistry.Add(filepath.ToSlash(filepath.Join(fmt.Sprintf("%03d", file.Record3.ArchiveIndex), file.GetRawFilename())), hashSum)
 			}
 
 			dest.Close()
+
+			if config.ConvertDdsTo != "" && filepath.Ext(fpath) == ".dds" {
+				ddsPath := fpath
+				// texconv does not accept absolute linux paths
+				if runtime.GOOS == "linux" {
+					curDir, err := os.Getwd()
+					if err != nil {
+						return err
+					}
+
+					relPath, err := filepath.Rel(curDir, fpath)
+					if err != nil {
+						return err
+					}
+					ddsPath = relPath
+				}
+
+				args := []string{
+					"-ft",
+					config.ConvertDdsTo,
+					"-f",
+					"rgba",
+					"-srgb",
+					"-y",
+					"-o",
+					filepath.Dir(ddsPath),
+					ddsPath,
+				}
+
+				_, err := texconv.Texconv(args, false, true, true)
+				if err == nil {
+					os.Remove(fpath)
+					if hashSumFilePath != "" {
+						hasher := sha1.New()
+						f, err := os.Open(strings.TrimSuffix(fpath, ".dds") + "." + config.ConvertDdsTo)
+						if err != nil {
+							return err
+						}
+						_, err = io.Copy(hasher, f)
+						if err != nil {
+							return err
+						}
+
+						f.Close()
+
+						hashRegistry.Add(filepath.ToSlash(strings.TrimSuffix(filepath.Join(fmt.Sprintf("%03d", file.Record3.ArchiveIndex), file.GetRawFilename()), ".dds")+"."+config.ConvertDdsTo), hasher.Sum(nil))
+						hashRegistry.Remove(filepath.ToSlash(filepath.Join(fmt.Sprintf("%03d", file.Record3.ArchiveIndex), file.GetRawFilename())))
+					}
+				}
+			}
 
 			if file.FileName != "" {
 				fpath = filepath.Join(outputDirPath, file.FileName)
@@ -182,14 +244,64 @@ func Command(ctx context.Context, args []string) error {
 				}
 
 				if hashSum != nil {
-					hashRegistry.Add(file.FileName, hashSum)
+					hashRegistry.Add(filepath.ToSlash(file.FileName), hashSum)
 				}
 
 				dest.Close()
+
+				if config.ConvertDdsTo != "" && filepath.Ext(fpath) == ".dds" {
+					ddsPath := fpath
+					// texconv does not accept absolute linux paths
+					if runtime.GOOS == "linux" {
+						curDir, err := os.Getwd()
+						if err != nil {
+							return err
+						}
+
+						relPath, err := filepath.Rel(curDir, fpath)
+						if err != nil {
+							return err
+						}
+						ddsPath = relPath
+					}
+
+					args := []string{
+						"-ft",
+						config.ConvertDdsTo,
+						"-f",
+						"rgba",
+						"-srgb",
+						"-y",
+						"-o",
+						filepath.Dir(ddsPath),
+						ddsPath,
+					}
+
+					_, err := texconv.Texconv(args, false, true, true)
+					if err == nil {
+						os.Remove(fpath)
+						if hashSumFilePath != "" {
+							hasher := sha1.New()
+							f, err := os.Open(strings.TrimSuffix(fpath, ".dds") + "." + config.ConvertDdsTo)
+							if err != nil {
+								return err
+							}
+							_, err = io.Copy(hasher, f)
+							if err != nil {
+								return err
+							}
+
+							f.Close()
+
+							hashRegistry.Add(filepath.ToSlash(strings.TrimSuffix(file.FileName, ".dds")+"."+config.ConvertDdsTo), hasher.Sum(nil))
+							hashRegistry.Remove(filepath.ToSlash(file.FileName))
+						}
+					}
+				}
 			}
 
 			return nil
-		}))
+		})
 	}
 
 	recordChan := make(chan *extracter.Record, 100)
@@ -223,7 +335,6 @@ Loop:
 		}
 	}
 
-	pool.Close()
 	pool.Wait()
 
 	if hashSumFilePath != "" {

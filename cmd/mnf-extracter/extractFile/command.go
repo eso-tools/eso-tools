@@ -3,18 +3,18 @@ package extractFile
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
-	"github.com/eso-tools/eso-tools/extracter"
-	"github.com/eso-tools/eso-tools/mnf"
-	"github.com/jessevdk/go-flags"
-	"github.com/new-world-tools/new-world-tools/profiler"
-	workerpool "github.com/zelenin/go-worker-pool"
 	"io"
 	"log"
 	"os"
 	"path/filepath"
 	"regexp"
+
+	"github.com/eso-tools/eso-tools/extracter"
+	"github.com/eso-tools/eso-tools/mnf"
+	"github.com/jessevdk/go-flags"
+	"github.com/new-world-tools/new-world-tools/profiler"
+	workerpool "github.com/zelenin/go-worker-pool"
 )
 
 const (
@@ -98,16 +98,14 @@ func Command(ctx context.Context, args []string) error {
 				break
 			}
 
-			taskId := err.(workerpool.TaskError).Id
-			err = errors.Unwrap(err)
-			log.Printf("task #%d err: %s", taskId, err)
+			log.Printf("%s", err)
 		}
 	}()
 
 	log.Printf("Prepare records...")
 
 	addTask := func(id int64, total int, file *extracter.Record, mnfData *mnf.Mnf) {
-		pool.AddTask(workerpool.NewTask(id, func(id int64) error {
+		pool.AddTask(func(ctx context.Context) error {
 			if id%10000 == 0 {
 				log.Printf("Task %d/%d", id, total)
 			}
@@ -165,7 +163,7 @@ func Command(ctx context.Context, args []string) error {
 			}
 
 			return nil
-		}))
+		})
 	}
 
 	recordChan := make(chan *extracter.Record, 100)
@@ -204,7 +202,6 @@ Loop:
 		}
 	}
 
-	pool.Close()
 	pool.Wait()
 
 	log.Printf("PeakMemory: %0.1fMb Duration: %s", float64(pr.GetPeakMemory())/1024/1024, pr.GetDuration().String())
