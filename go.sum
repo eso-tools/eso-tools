@@ -1,3 +1,7 @@
+github.com/ebitengine/purego v0.8.4 h1:CF7LEKg5FFOsASUj0+QwaXf8Ht6TlFxg09+S9wz0omw=
+github.com/ebitengine/purego v0.8.4/go.mod h1:iIjxzd6CiRiOG0UyXP+V1+jWqUXVjPKLAI0mRfJZTmQ=
+github.com/go-ole/go-ole v1.3.0 h1:Dt6ye7+vXGIKZ7Xtk4s6/xVdGDQynvom7xCFEdWr6uE=
+github.com/go-ole/go-ole v1.3.0/go.mod h1:5LS6F96DhAwUc7C+1HLexzMXY1xGRSryjyPPKW6zv78=
 github.com/jessevdk/go-flags v1.4.0 h1:4IU2WS7AumrZ/40jfhf4QVDMsQwqA7VEHozFRrGARJA=
 github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
 github.com/new-world-tools/go-oodle v0.2.2 h1:nSF9EJTKbGQaGmaQ1nBR2BYgLZN/QGVEUPXCStQYRf4=
@@ -6,5 +10,12 @@ github.com/new-world-tools/new-world-tools v0.3.0 h1:uoFaMMCPdKHuvkJmvmw30DnSoGE
 github.com/new-world-tools/new-world-tools v0.3.0/go.mod h1:M5grJAuJSXgQh3HNXQFDvKhcgxeABQxD05U7QNYY97E=
 github.com/zelenin/go-app v0.0.0-20220319181535-7120aa0d458d h1:nqtafAiogL4ywFKEhEChG8C9IltMVhLYzqkPldLi/VE=
 github.com/zelenin/go-app v0.0.0-20220319181535-7120aa0d458d/go.mod h1:ETpA/uW8Uz1Je7U3hLmZ5I/b883TzCGX57YdnSFTCAM=
+github.com/zelenin/go-binary v0.0.1 h1:D/p8N4L9uGsLOztFwjZlkDNqaAuehl1qhyj84SRCwVI=
+github.com/zelenin/go-binary v0.0.1/go.mod h1:ErCBSPoF0tHr7Bk0hvWFFU1UF8HFInC2uFgIUIG9wbk=
+github.com/zelenin/go-texconv v0.0.2 h1:KfW4/noIfB2Q1Bki7j945XE1es9mTCTG/DpvppG12To=
+github.com/zelenin/go-texconv v0.0.2/go.mod h1:G7P7dTWUaBYeCDN0si8bfC8MyY0DlnerYE3ODG435gs=
 github.com/zelenin/go-worker-pool v0.0.2 h1:7XBlbmO+EW3nXFZSBRRiFsKBB+LUjYcag3TPBRf3RpU=
 github.com/zelenin/go-worker-pool v0.0.2/go.mod h1:3ULMxCS2Kw35nbI6OuYzKPb5JaYvVuIukup6VnHIfPo=
+golang.org/x/sys v0.1.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+golang.org/x/sys v0.35.0 h1:vz1N37gP5bs89s7He8XuIYXpyY0+QlsKmzipCbUtyxI=
+golang.org/x/sys v0.35.0/go.mod h1:BJP2sWEmIv4KK5OTEluFJCKSidICx8ciO85XgH3Ak8k=

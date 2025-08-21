@@ -400,9 +400,9 @@ func (mnfData *Mnf) ReadRaw(record *Block3Record) ([]byte, error) {
 	return data, nil
 }
 
-var zosftDepotId uint32 = 0x00ffffff
+var zosftDepotId uint32 = 0x00ffffff // filetable.dat
 var zosftGameId uint32 = 0x00000000
-var anftDepotId uint32 = 0x01000000
+var anftDepotId uint32 = 0x01000000 // animsfiletable.dat
 
 func (mnfData *Mnf) GetZosft() (*zosft.Zosft, error) {
 	var zosftRecord *Block3Record
