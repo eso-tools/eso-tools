@@ -52,11 +52,11 @@ func Command(ctx context.Context, args []string) error {
 
 	inputFileInfo, err := os.Stat(inputFilePath)
 	if os.IsNotExist(err) {
-		return fmt.Errorf("'%s' does not exist", inputFilePath)
+		return fmt.Errorf("%q does not exist", inputFilePath)
 	}
 
 	if inputFileInfo.IsDir() {
-		return fmt.Errorf("'%s' is not a file", inputFilePath)
+		return fmt.Errorf("%q is not a file", inputFilePath)
 	}
 
 	outputDirPath, err := filepath.Abs(filepath.Clean(config.Output))
@@ -82,7 +82,7 @@ func Command(ctx context.Context, args []string) error {
 		return fmt.Errorf("MkdirAll: %s", err)
 	}
 
-	log.Printf("Parsing %s...", inputFilePath)
+	log.Printf("Parsing %q...", inputFilePath)
 	mnfData, err := mnf.Parse(inputFilePath)
 	if err != nil {
 		return fmt.Errorf("mnf.Parse: %s", err)

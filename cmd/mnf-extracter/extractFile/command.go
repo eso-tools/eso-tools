@@ -81,7 +81,7 @@ func Command(ctx context.Context, args []string) error {
 		return fmt.Errorf("MkdirAll: %s", err)
 	}
 
-	log.Printf("Parsing %s...", inputFilePath)
+	log.Printf("Parsing %q...", inputFilePath)
 	mnfData, err := mnf.Parse(inputFilePath)
 	if err != nil {
 		return fmt.Errorf("mnf.Parse: %s", err)
