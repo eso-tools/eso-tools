@@ -190,8 +190,8 @@ func Command(ctx context.Context, args []string) error {
 				args := []string{
 					"-ft",
 					config.ConvertDdsTo,
-					"-f",
-					"R8G8B8A8_UNORM_SRGB",
+					//"-f",
+					//"R8G8B8A8_UNORM_SRGB",
 					"-y",
 					"-o",
 					filepath.Dir(ddsPath),
@@ -267,8 +267,8 @@ func Command(ctx context.Context, args []string) error {
 					args := []string{
 						"-ft",
 						config.ConvertDdsTo,
-						"-f",
-						"R8G8B8A8_UNORM_SRGB",
+						//"-f",
+						//"R8G8B8A8_UNORM_SRGB",
 						"-y",
 						"-o",
 						filepath.Dir(ddsPath),
